@@ -1,0 +1,35 @@
+# Satır sonlarını normalize et.
+#
+# Depoda tek bir satır sonu biçimi tutmak için: Windows editörleri CRLF yazar,
+# CI (pwsh) ürettiği dosyalarda CRLF kullanır, Git Bash tarafı LF üretir.
+* text=auto eol=lf
+
+# Windows'ta çalıştırılan betikler CRLF olmalı: cmd.exe ve Inno Setup
+# derleyicisi LF ile beklenmedik davranabilir.
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+*.iss   text eol=crlf
+
+# Kaynak dosyaları Visual Studio ile uyumlu kalsın.
+*.cs    text eol=crlf
+*.xaml  text eol=crlf
+*.csproj text eol=crlf
+*.props text eol=crlf
+
+# İkili dosyalar dönüştürülmesin.
+*.png   binary
+*.ico   binary
+*.ttf   binary
+*.exe   binary
+*.dll   binary
+*.sys   binary
+*.msi   binary
+*.bin   binary
+*.gif   binary
+
+# GitHub dil istatistiklerinde üçüncü taraf ikili/yardımcı dosyalar sayılmasın.
+src/RevivalDPI/Resources/zapret/**   linguist-vendored
+src/RevivalDPI/Resources/goodbyedpi/** linguist-vendored
+src/RevivalDPI/Resources/proxifyre/** linguist-vendored
+src/RevivalDPI/Resources/byedpi/**   linguist-vendored

@@ -1,0 +1,79 @@
+name: CI
+
+# Her dala yapilan push'ta ve pull request'lerde derleme dogrulamasi.
+#
+# main de dahildir. Release workflow'u main'i zaten derler ama "-warnaserror"
+# kullanmaz; yeni bir derleyici uyarisini yalnizca bu is dusurur. Ayrica CI
+# rozeti boylece gercek bir durum gosterir, aksi halde kalici "no status".
+#
+# branches: ["**"] tum dallari kapsar ama ETIKETLERI kapsamaz: release
+# yayimlanirken olusan v* etiketi bu isi bosuna tetiklemesin.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+
+jobs:
+  build:
+    name: Derle (win-x64)
+    runs-on: windows-latest
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v7
+
+      - name: .NET SDK kur
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: NuGet önbelleği
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Bağımlılıkları geri yükle
+        run: dotnet restore src/RevivalDPI/RevivalDPI.csproj
+
+      - name: Derle
+        run: dotnet build src/RevivalDPI/RevivalDPI.csproj -c Release --no-restore -warnaserror
+
+      - name: Yayın çıktısını doğrula
+        shell: pwsh
+        run: ./src/publish_release.ps1 -SkipInstaller
+
+      - name: Sürüm tutarlılığını doğrula
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $props = Get-Content 'Directory.Build.props' -Raw
+          if ($props -notmatch '<RevivalDpiVersion>([\d.]+)</RevivalDpiVersion>') {
+            throw 'Directory.Build.props icinde RevivalDpiVersion bulunamadi.'
+          }
+          $declared = $Matches[1]
+          $exe = 'publish/RevivalDPI-win-x64/RevivalDPI.exe'
+          $actual = (Get-Item $exe).VersionInfo.FileVersion
+          Write-Host "Directory.Build.props: $declared"
+          Write-Host "RevivalDPI.exe       : $actual"
+          # StartsWith kullanmiyoruz: '1.6.1' beklerken '1.6.10' da geceridi.
+          $actualShort = ($actual -split '\.')[0..2] -join '.'
+          if ($actualShort -ne $declared) {
+            throw "Surum uyusmuyor: props=$declared exe=$actual"
+          }

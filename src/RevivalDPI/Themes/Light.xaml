@@ -1,0 +1,98 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        AÇIK TEMA: semantic token'lar.
+
+        Bu dosya ve Dark.xaml, RevivalDPI'nin TEK renk kaynağıdır. Kontrollerde
+        sabit renk kullanmayın; her renk buradan bir token üzerinden gelsin ve
+        DynamicResource ile tüketilsin. StaticResource kullanılırsa tema
+        değiştiğinde o kontrol eski renginde donar.
+
+        ThemeManager, Application.Resources.MergedDictionaries içindeki tema
+        sözlüğünü tek seferde bu dosyayla veya Dark.xaml ile değiştirir.
+
+        Renk anlamları sabittir:
+          - Success (yeşil) YALNIZCA başarı ve çalışan/kurulu durum
+          - Danger  (kırmızı) YALNIZCA yıkıcı işlem ve hata
+          - "Kurulu değil" nötr gridir (Track), kırmızı DEĞİL
+    -->
+
+    <!-- ===== Color katmanı =====
+         DropShadowEffect.Color ve animasyonlar Brush değil Color ister; bu
+         yüzden her token önce Color olarak tanımlanır, fırçalar türetilir. -->
+    <Color x:Key="Color.Background">#FFF2F3F4</Color>
+    <Color x:Key="Color.Surface">#FFFFFFFF</Color>
+    <Color x:Key="Color.SurfaceRaised">#FFFAFBFB</Color>
+    <Color x:Key="Color.Border">#FFD9DCDF</Color>
+    <Color x:Key="Color.BorderStrong">#FFC2C7CC</Color>
+    <Color x:Key="Color.TextPrimary">#FF1D1F20</Color>
+    <Color x:Key="Color.TextSecondary">#FF5D6368</Color>
+    <Color x:Key="Color.Accent">#FF4C6F93</Color>
+    <Color x:Key="Color.AccentStrong">#FF406081</Color>
+    <Color x:Key="Color.OnAccent">#FFFFFFFF</Color>
+    <Color x:Key="Color.Success">#FF2E7D4F</Color>
+    <Color x:Key="Color.Warning">#FFA06E14</Color>
+    <Color x:Key="Color.Danger">#FFB3403A</Color>
+    <Color x:Key="Color.DangerStrong">#FFB3403A</Color>
+    <Color x:Key="Color.Track">#FFC2C7CC</Color>
+    <!-- Hover tonu: siyah %4.5 -->
+    <Color x:Key="Color.Hover">#0B000000</Color>
+    <!-- Dialog arkası scrim: siyah %45 -->
+    <Color x:Key="Color.Overlay">#73000000</Color>
+    <Color x:Key="Color.Focus">#FF4C6F93</Color>
+    <Color x:Key="Color.Shadow">#2E1E2832</Color>
+
+    <!-- ===== Brush katmanı ===== -->
+    <SolidColorBrush x:Key="Brush.Background"     Color="{StaticResource Color.Background}" />
+    <SolidColorBrush x:Key="Brush.Surface"        Color="{StaticResource Color.Surface}" />
+    <SolidColorBrush x:Key="Brush.SurfaceRaised"  Color="{StaticResource Color.SurfaceRaised}" />
+    <SolidColorBrush x:Key="Brush.Border"         Color="{StaticResource Color.Border}" />
+    <SolidColorBrush x:Key="Brush.BorderStrong"   Color="{StaticResource Color.BorderStrong}" />
+    <SolidColorBrush x:Key="Brush.TextPrimary"    Color="{StaticResource Color.TextPrimary}" />
+    <SolidColorBrush x:Key="Brush.TextSecondary"  Color="{StaticResource Color.TextSecondary}" />
+    <SolidColorBrush x:Key="Brush.Accent"         Color="{StaticResource Color.Accent}" />
+    <SolidColorBrush x:Key="Brush.AccentStrong"   Color="{StaticResource Color.AccentStrong}" />
+    <SolidColorBrush x:Key="Brush.OnAccent"       Color="{StaticResource Color.OnAccent}" />
+    <SolidColorBrush x:Key="Brush.Success"        Color="{StaticResource Color.Success}" />
+    <SolidColorBrush x:Key="Brush.Warning"        Color="{StaticResource Color.Warning}" />
+    <SolidColorBrush x:Key="Brush.Danger"         Color="{StaticResource Color.Danger}" />
+    <SolidColorBrush x:Key="Brush.DangerStrong"   Color="{StaticResource Color.DangerStrong}" />
+    <SolidColorBrush x:Key="Brush.Track"          Color="{StaticResource Color.Track}" />
+    <SolidColorBrush x:Key="Brush.Hover"          Color="{StaticResource Color.Hover}" />
+    <SolidColorBrush x:Key="Brush.Overlay"        Color="{StaticResource Color.Overlay}" />
+    <SolidColorBrush x:Key="Brush.Focus"          Color="{StaticResource Color.Focus}" />
+
+    <!-- Devre dışı kontroller okunabilirliğini tamamen kaybetmesin: %45 opaklık -->
+    <system:Double xmlns:system="clr-namespace:System;assembly=mscorlib"
+                   x:Key="Opacity.Disabled">0.45</system:Double>
+
+    <!-- ===== Eski anahtar adları =====
+         Mevcut MainWindow.xaml ve App.xaml bu adları DynamicResource ile
+         tüketiyor. Arayüz aşamalı olarak yukarıdaki token'lara taşınırken
+         bu takma adlar geçişi bozmadan sürdürür. Yeni XAML'de KULLANMAYIN. -->
+    <SolidColorBrush x:Key="AppBackgroundBrush"      Color="{StaticResource Color.Background}" />
+    <SolidColorBrush x:Key="AppSurfaceBrush"         Color="{StaticResource Color.Surface}" />
+    <SolidColorBrush x:Key="AppSurfaceElevatedBrush" Color="{StaticResource Color.SurfaceRaised}" />
+    <SolidColorBrush x:Key="AppBorderBrush"          Color="{StaticResource Color.Border}" />
+    <SolidColorBrush x:Key="AppTextPrimaryBrush"     Color="{StaticResource Color.TextPrimary}" />
+    <SolidColorBrush x:Key="AppTextSecondaryBrush"   Color="{StaticResource Color.TextSecondary}" />
+    <SolidColorBrush x:Key="AppTextMutedBrush"       Color="{StaticResource Color.TextSecondary}" />
+    <SolidColorBrush x:Key="AccentBrush"             Color="{StaticResource Color.Accent}" />
+    <SolidColorBrush x:Key="AccentForegroundBrush"   Color="{StaticResource Color.OnAccent}" />
+    <SolidColorBrush x:Key="AccentSoftBrush"         Color="{StaticResource Color.SurfaceRaised}" />
+    <SolidColorBrush x:Key="DangerBrush"             Color="{StaticResource Color.Danger}" />
+    <SolidColorBrush x:Key="DangerSurfaceBrush"      Color="{StaticResource Color.SurfaceRaised}" />
+    <SolidColorBrush x:Key="SuccessBrush"            Color="{StaticResource Color.Success}" />
+    <SolidColorBrush x:Key="WarningBrush"            Color="{StaticResource Color.Warning}" />
+    <SolidColorBrush x:Key="FocusRingBrush"          Color="{StaticResource Color.Focus}" />
+    <SolidColorBrush x:Key="ControlTrackBrush"       Color="{StaticResource Color.Track}" />
+    <SolidColorBrush x:Key="ControlHoverBrush"       Color="{StaticResource Color.Hover}" />
+
+    <!-- MaterialDesign yüzey anahtarları da tema ile birlikte değişsin;
+         aksi hâlde MaterialDesign tabanlı kontroller eski temada kalır. -->
+    <SolidColorBrush x:Key="MaterialDesignPaper"   Color="{StaticResource Color.Background}" />
+    <SolidColorBrush x:Key="MaterialDesignBody"    Color="{StaticResource Color.TextPrimary}" />
+    <SolidColorBrush x:Key="MaterialDesignDivider" Color="{StaticResource Color.Border}" />
+
+</ResourceDictionary>

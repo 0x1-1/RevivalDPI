@@ -1,0 +1,946 @@
+<Window x:Class="RevivalDPI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="RevivalDPI"
+        Height="700" Width="1000"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="{DynamicResource Brush.Background}"
+        TextElement.Foreground="{DynamicResource Brush.TextPrimary}"
+        FontFamily="Segoe UI Variable Text, Segoe UI"
+        FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        UseLayoutRounding="True">
+
+    <!--
+        Başlık çubuğu özel DEĞİL, Windows'un kendi çubuğudur; koyu/açık görünümü
+        ThemeManager tarafından DWM üzerinden ayarlanır. Özel bir çubuk çizmek
+        tema senkronizasyonu ve pencere davranışı açısından ek risk getirirdi.
+    -->
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="54" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ============ ÜST BAR ============ -->
+        <Border Grid.Row="0" Background="{DynamicResource Brush.Surface}"
+                BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1">
+            <Grid Margin="20,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Source kod tarafinda atanir: bkz. LoadBrandLogo -->
+                    <Image x:Name="ImgHeaderLogo"
+                           Height="34" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" />
+                    <TextBlock Text="RevivalDPI" FontSize="15" FontWeight="SemiBold"
+                               VerticalAlignment="Center" Margin="10,0,0,0" />
+                    <TextBlock x:Name="TxtVersion" FontSize="11" VerticalAlignment="Center" Margin="8,0,0,0"
+                               Foreground="{DynamicResource Brush.TextSecondary}" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button x:Name="BtnAbout" Style="{StaticResource Button.Icon}" Click="BtnAbout_Click"
+                            ToolTip="Hakkında" AutomationProperties.Name="Hakkında">
+                        <!--
+                            Dolgu tabanlı tek parça yol. Önceki sürüm çizgi
+                            (Stroke) tabanlıydı ve içinde sıfır uzunluklu bir
+                            segment ("nokta") vardı; Stretch="Uniform" bunu
+                            ölçeklerken ikon bozuluyordu.
+                        -->
+                        <Path Width="16" Height="16" Stretch="Uniform"
+                              Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                              Data="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
+                    </Button>
+                    <Button x:Name="BtnSettings" Style="{StaticResource Button.Icon}" Click="BtnSettings_Click"
+                            ToolTip="Ayarlar" AutomationProperties.Name="Ayarlar" Margin="6,0,0,0">
+                        <Path Width="16" Height="16" Stretch="Uniform"
+                              Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                              Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ============ GÖVDE ============ -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="208" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Sol navigasyon -->
+            <Border Grid.Column="0" Background="{DynamicResource Brush.Background}"
+                    BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,1,0">
+                <StackPanel Margin="8,12" KeyboardNavigation.TabNavigation="Local">
+                    <RadioButton x:Name="NavOverview" Style="{StaticResource NavItem}" Content="Genel Bakış"
+                                 IsChecked="True" Checked="Nav_Checked" Tag="0" />
+                    <RadioButton x:Name="NavDpi" Style="{StaticResource NavItem}" Content="DPI Yönlendirme"
+                                 Checked="Nav_Checked" Tag="1" />
+                    <RadioButton x:Name="NavPackets" Style="{StaticResource NavItem}" Content="Paket Kuralları"
+                                 Checked="Nav_Checked" Tag="2" />
+                    <RadioButton x:Name="NavClassic" Style="{StaticResource NavItem}" Content="DPI Classic"
+                                 Checked="Nav_Checked" Tag="3" />
+                    <RadioButton x:Name="NavRecovery" Style="{StaticResource NavItem}" Content="Kurtarma"
+                                 Checked="Nav_Checked" Tag="4" />
+                    <RadioButton x:Name="NavServices" Style="{StaticResource NavItem}" Content="Servisler"
+                                 Checked="Nav_Checked" Tag="5" />
+                </StackPanel>
+            </Border>
+
+            <!-- İçerik -->
+            <!--
+                Boşluk ScrollViewer.Padding ile DEĞİL, içerideki Grid'in
+                Margin'i ile veriliyor: MaterialDesign'ın örtük ScrollViewer
+                stili şablonu değiştirdiği için Padding sessizce yutuluyordu
+                (34 yazıp 12 px almıştık). Margin şablondan bağımsızdır.
+            -->
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <Grid Margin="32,36,32,40">
+
+                    <!-- ==================== GENEL BAKIŞ ==================== -->
+                    <StackPanel x:Name="PageOverview" MaxWidth="640" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Genel Bakış" Style="{StaticResource Text.PageTitle}" />
+                            <Button Style="{StaticResource Button.Icon}" Width="24" Height="24" Margin="8,0,0,0"
+                                    Click="HelpOverview_Click" ToolTip="Bu ekran hakkında"
+                                    AutomationProperties.Name="Bu ekran hakkında" VerticalAlignment="Center">
+                                <TextBlock Text="i" FontWeight="SemiBold" FontSize="13" />
+                            </Button>
+                        </StackPanel>
+                        <TextBlock x:Name="TxtOverviewLine" Style="{StaticResource Text.PageSubtitle}"
+                                   Text="Durum kontrol ediliyor…" />
+
+                        <!-- Ağ katmanına müdahale eden yazılımlar RevivalDPI ile
+                             çakışır. Eski arayüz bunu ekranı kaplayan bir katmanla
+                             gösteriyordu; burada araya girmeyen bir uyarı satırı. -->
+                        <Border x:Name="PanelConflict" Visibility="Collapsed" Margin="0,14,0,0"
+                                Background="{DynamicResource Brush.Surface}"
+                                BorderBrush="{DynamicResource Brush.Warning}" BorderThickness="1"
+                                CornerRadius="4" Padding="12,10">
+                            <TextBlock x:Name="TxtConflict" Style="{StaticResource Text.Caption}"
+                                       Foreground="{DynamicResource Brush.Warning}" TextWrapping="Wrap" />
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" Margin="0,20,0,0" Padding="16,16,20,16">
+                            <Grid x:Name="GridOverviewStats">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <!-- Hücreler kod tarafında doldurulur -->
+                            </Grid>
+                        </Border>
+
+                        <TextBlock Text="Yönlendirme Kurulumu" Style="{StaticResource Text.SectionTitle}"
+                                   Margin="0,28,0,4" />
+                        <TextBlock Style="{StaticResource Text.Caption}" Margin="0,0,0,14"
+                                   Text="RevivalDPI'nin kullandığı Windows yönlendirme bileşenlerini kurar veya hazırlar." />
+
+                        <Border Style="{StaticResource Card}" Padding="14,12" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Standart kurulum" FontWeight="SemiBold" />
+                                    <TextBlock Style="{StaticResource Text.Caption}" Margin="0,2,0,0"
+                                               Text="Önerilen yöntem. WireSock tabanlı yönlendirmeyi kurar." />
+                                </StackPanel>
+                                <Button x:Name="BtnStdRoute" Grid.Column="1" Style="{StaticResource Button.Primary}"
+                                        Content="Kurulumu Başlat" Click="BtnStdRoute_Click" VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" Padding="14,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Alternatif kurulum" FontWeight="SemiBold" />
+                                    <TextBlock Style="{StaticResource Text.Caption}" Margin="0,2,0,0"
+                                               Text="Standart yöntem çalışmadığında kullanılacak ikinci yapılandırma." />
+                                </StackPanel>
+                                <Button x:Name="BtnAltRoute" Grid.Column="1" Style="{StaticResource Button.Secondary}"
+                                        Content="Alternatif Kurulum" Click="BtnAltRoute_Click" VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
+
+                        <Button x:Name="BtnAdvanced" Style="{StaticResource Button.Subtle}" Margin="0,24,0,0"
+                                Content="▸ Gelişmiş seçenekler" Click="BtnAdvanced_Click"
+                                HorizontalAlignment="Left" />
+
+                        <Border x:Name="PanelAdvanced" Style="{StaticResource Card}" Margin="0,10,0,0"
+                                Visibility="Collapsed">
+                            <StackPanel>
+                                <Border Style="{StaticResource RowSeparator}" Padding="16,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,16,0">
+                                            <TextBlock Text="Tarayıcıları tünelle" />
+                                            <TextBlock Style="{StaticResource Text.Caption}" Margin="0,2,0,0"
+                                                       Text="Kurulum sırasında tarayıcı trafiği de tünele dâhil edilir." />
+                                        </StackPanel>
+                                        <ToggleButton x:Name="TglBrowsers" Grid.Column="1" Style="{StaticResource Toggle}"
+                                                      Click="TglBrowsers_Click"
+                                                      AutomationProperties.Name="Tarayıcıları tünelle" />
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource RowSeparator}" Padding="16,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,16,0">
+                                            <TextBlock Text="WireSock istemcisini kur" />
+                                            <TextBlock Style="{StaticResource Text.Caption}" Margin="0,2,0,0"
+                                                       Text="WireSock istemci bileşenini kuruluma ekler." />
+                                        </StackPanel>
+                                        <ToggleButton x:Name="TglWsClient" Grid.Column="1" Style="{StaticResource Toggle}"
+                                                      Click="TglWsClient_Click"
+                                                      AutomationProperties.Name="WireSock istemcisini kur" />
+                                    </Grid>
+                                </Border>
+                                <Border Padding="16,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,16,0">
+                                            <TextBlock Text="Klasör listesini özelleştir" />
+                                            <TextBlock Style="{StaticResource Text.Caption}" Margin="0,2,0,0"
+                                                       Text="Tünellenecek uygulama klasörlerini elle seçmenizi sağlar." />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <Button x:Name="BtnAddFolder" Style="{StaticResource Button.SecondarySmall}"
+                                                    Content="Klasör Ekle" Click="BtnAddFolder_Click" />
+                                            <Button x:Name="BtnClearFolders" Style="{StaticResource Button.SecondarySmall}"
+                                                    Content="Temizle" Click="BtnClearFolders_Click" Margin="8,0,0,0" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource RowSeparator}" BorderThickness="0,1,0,0" Padding="16,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,16,0">
+                                            <TextBlock x:Name="TxtFolderCount" Text="Seçili klasör yok" />
+                                            <TextBlock Style="{StaticResource Text.Caption}" Margin="0,2,0,0"
+                                                       Text="Özel kurulum yalnızca seçtiğiniz klasörleri tüneller. Yapılandırma dosyasını kurulum yapmadan da üretebilirsiniz." />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button x:Name="BtnGenerateConfig" Style="{StaticResource Button.SecondarySmall}"
+                                                    Content="Yapılandırmayı Üret" Click="BtnGenerateConfig_Click" />
+                                            <Button x:Name="BtnCustomSetup" Style="{StaticResource Button.PrimarySmall}"
+                                                    Content="Özel Kurulum" Click="BtnCustomSetup_Click" Margin="8,0,0,0" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ==================== DPI YÖNLENDİRME ==================== -->
+                    <StackPanel x:Name="PageDpi" MaxWidth="640" HorizontalAlignment="Center" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="DPI Yönlendirme" Style="{StaticResource Text.PageTitle}" />
+                            <Button Style="{StaticResource Button.Icon}" Width="24" Height="24" Margin="8,0,0,0"
+                                    Click="HelpDpi_Click" ToolTip="Bu ekran hakkında"
+                                    AutomationProperties.Name="Bu ekran hakkında" VerticalAlignment="Center">
+                                <TextBlock Text="i" FontWeight="SemiBold" FontSize="13" />
+                            </Button>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource Text.PageSubtitle}" Margin="0,6,0,18"
+                                   Text="Kullanılacak ByeDPI yöntemini seçin ve kurulumu başlatın." />
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="CardSplit" Grid.Column="0" Style="{StaticResource Card}" Padding="14"
+                                    MouseLeftButtonUp="PickSplit_Click" Cursor="Hand">
+                                <StackPanel>
+                                    <Grid>
+                                        <TextBlock Text="ByeDPI Split Tunneling" FontWeight="SemiBold"
+                                                   TextWrapping="Wrap" Margin="0,0,8,0" />
+                                        <Border x:Name="BadgeSplit" Style="{StaticResource Badge}"
+                                                HorizontalAlignment="Right" VerticalAlignment="Top" />
+                                    </Grid>
+                                    <TextBlock Style="{StaticResource Text.Caption}" Margin="0,8,0,0"
+                                               Text="Trafiği uygulama bazında ayırarak yalnızca gereken bağlantıları tüneller." />
+                                </StackPanel>
+                            </Border>
+                            <Border x:Name="CardDll" Grid.Column="2" Style="{StaticResource Card}" Padding="14"
+                                    MouseLeftButtonUp="PickDll_Click" Cursor="Hand">
+                                <StackPanel>
+                                    <Grid>
+                                        <TextBlock Text="ByeDPI DLL" FontWeight="SemiBold" Margin="0,0,8,0" />
+                                        <Border x:Name="BadgeDll" Style="{StaticResource Badge}"
+                                                HorizontalAlignment="Right" VerticalAlignment="Top" />
+                                    </Grid>
+                                    <TextBlock Style="{StaticResource Text.Caption}" Margin="0,8,0,0"
+                                               Text="ByeDPI DLL bileşenini sistem geneli kullanım için kurar." />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                            <StackPanel>
+                                <Border Style="{StaticResource RowSeparator}" Padding="16,12">
+                                    <TextBlock x:Name="TxtDpiMethodTitle" FontWeight="SemiBold"
+                                               Text="ByeDPI Split Tunneling: Ayarlar" />
+                                </Border>
+                                <Border x:Name="RowDpiBrowsers" Style="{StaticResource RowSeparator}" Padding="16,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,16,0">
+                                            <TextBlock Text="Tarayıcıları da tünelle" />
+                                            <TextBlock Style="{StaticResource Text.Caption}" Margin="0,2,0,0"
+                                                       Text="Split tunneling kurulumuna tarayıcı trafiğini ekler." />
+                                        </StackPanel>
+                                        <ToggleButton x:Name="TglDpiBrowsers" Grid.Column="1" Style="{StaticResource Toggle}"
+                                                      Click="TglDpiBrowsers_Click"
+                                                      AutomationProperties.Name="Tarayıcıları da tünelle" />
+                                    </Grid>
+                                </Border>
+                                <Border Padding="16,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock x:Name="TxtDpiSummary" Style="{StaticResource Text.Caption}"
+                                                   VerticalAlignment="Center" Margin="0,0,16,0" />
+                                        <Button x:Name="BtnRunDpi" Grid.Column="1" Style="{StaticResource Button.Primary}"
+                                                Content="Kurulumu Başlat" Click="BtnRunDpi_Click" />
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ==================== PAKET KURALLARI ==================== -->
+                    <StackPanel x:Name="PagePackets" MaxWidth="640" HorizontalAlignment="Center" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Paket Kuralları" Style="{StaticResource Text.PageTitle}" />
+                            <Button Style="{StaticResource Button.Icon}" Width="24" Height="24" Margin="8,0,0,0"
+                                    Click="HelpPackets_Click" ToolTip="Bu ekran hakkında"
+                                    AutomationProperties.Name="Bu ekran hakkında" VerticalAlignment="Center">
+                                <TextBlock Text="i" FontWeight="SemiBold" FontSize="13" />
+                            </Button>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource Text.PageSubtitle}" Margin="0,6,0,18"
+                                   Text="Zapret tabanlı paket kurallarını hazır profillerle kurar." />
+
+                        <Border Style="{StaticResource Card}" Padding="0,6">
+                            <StackPanel>
+                                <Grid Margin="16,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Yöntem" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="Zapret" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </Grid>
+                                <Grid Margin="16,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Tarama biçimi" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" />
+                                    <Border Grid.Column="1" Style="{StaticResource SegmentGroup}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <RadioButton x:Name="SegScanQuick" Style="{StaticResource Segment}"
+                                                         Content="Hızlı" IsChecked="True" GroupName="ZScan"
+                                                         Checked="ZapretScan_Changed" Tag="0" />
+                                            <RadioButton x:Name="SegScanFull" Style="{StaticResource Segment}"
+                                                         Content="Ayrıntılı" GroupName="ZScan"
+                                                         Checked="ZapretScan_Changed" Tag="2" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                                <Grid Margin="16,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Hazır profil" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" />
+                                    <ComboBox x:Name="CmbZapretPreset" Grid.Column="1" Style="{StaticResource Combo}"
+                                              SelectionChanged="CmbZapretPreset_Changed" />
+                                </Grid>
+                                <Grid Margin="16,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Hazır profili düzenle" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" />
+                                    <ToggleButton x:Name="TglZapretEdit" Grid.Column="1" Style="{StaticResource Toggle}"
+                                                  HorizontalAlignment="Left" Click="TglZapretEdit_Click"
+                                                  AutomationProperties.Name="Hazır profili düzenle" />
+                                </Grid>
+                                <StackPanel x:Name="PanelZapretParams" Margin="188,4,16,12" Visibility="Collapsed">
+                                    <TextBox x:Name="TxtZapretParams" Style="{StaticResource Editor}" Height="70"
+                                             TextChanged="TxtZapretParams_Changed" />
+                                    <TextBlock Style="{StaticResource Text.Caption}" Margin="0,4,0,0"
+                                               Text="Profil parametreleri. Emin değilseniz varsayılanları koruyun." />
+                                </StackPanel>
+                                <Grid Margin="16,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Çalışma biçimi" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" />
+                                    <Border Grid.Column="1" Style="{StaticResource SegmentGroup}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <RadioButton x:Name="SegZapretService" Style="{StaticResource Segment}"
+                                                         Content="Servis" IsChecked="True" GroupName="ZMode"
+                                                         Checked="ZapretMode_Changed" />
+                                            <RadioButton x:Name="SegZapretOnce" Style="{StaticResource Segment}"
+                                                         Content="Tek seferlik" GroupName="ZMode"
+                                                         Checked="ZapretMode_Changed" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                                <TextBlock x:Name="TxtZapretModeDesc" Style="{StaticResource Text.Caption}"
+                                           Margin="188,2,16,8" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" Margin="0,14,0,0" Padding="16,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="TxtZapretSummary" Style="{StaticResource Text.Caption}"
+                                           VerticalAlignment="Center" Margin="0,0,16,0" />
+                                <Button x:Name="BtnRunZapret" Grid.Column="1" Style="{StaticResource Button.Primary}"
+                                        Content="Kurulumu Başlat" Click="BtnRunZapret_Click" />
+                            </Grid>
+                        </Border>
+
+                        <Button x:Name="BtnZapretAuto" Style="{StaticResource Button.Subtle}" Margin="0,14,0,0"
+                                Content="Otomatik tarama ile kur (blockcheck)" Click="BtnZapretAuto_Click"
+                                HorizontalAlignment="Left" />
+                    </StackPanel>
+
+                    <!-- ==================== DPI CLASSIC ==================== -->
+                    <StackPanel x:Name="PageClassic" MaxWidth="640" HorizontalAlignment="Center" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="DPI Classic" Style="{StaticResource Text.PageTitle}" />
+                            <Button Style="{StaticResource Button.Icon}" Width="24" Height="24" Margin="8,0,0,0"
+                                    Click="HelpClassic_Click" ToolTip="Bu ekran hakkında"
+                                    AutomationProperties.Name="Bu ekran hakkında" VerticalAlignment="Center">
+                                <TextBlock Text="i" FontWeight="SemiBold" FontSize="13" />
+                            </Button>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource Text.PageSubtitle}" Margin="0,6,0,18"
+                                   Text="GoodbyeDPI tabanlı klasik DPI kurulumunu hazır ayarlarla yapar." />
+
+                        <Border Style="{StaticResource Card}" Padding="0,6">
+                            <StackPanel>
+                                <Grid Margin="16,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Hazır ayar" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" />
+                                    <ComboBox x:Name="CmbClassicPreset" Grid.Column="1" Style="{StaticResource Combo}"
+                                              SelectionChanged="CmbClassicPreset_Changed" />
+                                </Grid>
+                                <Grid Margin="16,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Hazır ayarı düzenle" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" />
+                                    <ToggleButton x:Name="TglClassicEdit" Grid.Column="1" Style="{StaticResource Toggle}"
+                                                  HorizontalAlignment="Left" Click="TglClassicEdit_Click"
+                                                  AutomationProperties.Name="Hazır ayarı düzenle" />
+                                </Grid>
+                                <StackPanel x:Name="PanelClassicParams" Margin="188,4,16,12" Visibility="Collapsed">
+                                    <TextBox x:Name="TxtClassicParams" Style="{StaticResource Editor}" Height="70"
+                                             TextChanged="TxtClassicParams_Changed" />
+                                </StackPanel>
+                                <Grid Margin="16,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Blacklist kullan" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <ToggleButton x:Name="TglBlacklist" Style="{StaticResource Toggle}"
+                                                      Click="TglBlacklist_Click"
+                                                      AutomationProperties.Name="Blacklist kullan" />
+                                        <Button x:Name="BtnEditBlacklist" Style="{StaticResource Button.SecondarySmall}"
+                                                Content="Blacklisti düzenle" Margin="14,0,0,0"
+                                                Click="BtnEditBlacklist_Click" />
+                                    </StackPanel>
+                                </Grid>
+                                <Grid Margin="16,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Çalışma biçimi" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" />
+                                    <Border Grid.Column="1" Style="{StaticResource SegmentGroup}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <RadioButton x:Name="SegClassicService" Style="{StaticResource Segment}"
+                                                         Content="Servis" IsChecked="True" GroupName="CMode"
+                                                         Checked="ClassicMode_Changed" />
+                                            <RadioButton x:Name="SegClassicOnce" Style="{StaticResource Segment}"
+                                                         Content="Tek seferlik" GroupName="CMode"
+                                                         Checked="ClassicMode_Changed" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" Margin="0,14,0,0" Padding="16,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="TxtClassicSummary" Style="{StaticResource Text.Caption}"
+                                           VerticalAlignment="Center" Margin="0,0,16,0" />
+                                <Button x:Name="BtnRunClassic" Grid.Column="1" Style="{StaticResource Button.Primary}"
+                                        Content="Kurulumu Başlat" Click="BtnRunClassic_Click" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ==================== KURTARMA ==================== -->
+                    <StackPanel x:Name="PageRecovery" MaxWidth="640" HorizontalAlignment="Center" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Kurtarma" Style="{StaticResource Text.PageTitle}" />
+                            <Button Style="{StaticResource Button.Icon}" Width="24" Height="24" Margin="8,0,0,0"
+                                    Click="HelpRecovery_Click" ToolTip="Bu ekran hakkında"
+                                    AutomationProperties.Name="Bu ekran hakkında" VerticalAlignment="Center">
+                                <TextBlock Text="i" FontWeight="SemiBold" FontSize="13" />
+                            </Button>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource Text.PageSubtitle}" Margin="0,6,0,18"
+                                   Text="Discord ve ilgili istemcilerin kurulumunu onarır veya yeniden kurar." />
+
+                        <TextBlock Text="UYGULAMA ONARIMI" Style="{StaticResource Text.GroupLabel}" Margin="0,0,0,10" />
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <Border Style="{StaticResource RowSeparator}" Padding="16,13">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,16,0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Discord" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                <Border x:Name="BadgeDiscord" Style="{StaticResource Badge}" Margin="10,0,0,0" />
+                                            </StackPanel>
+                                            <TextBlock Style="{StaticResource Text.Caption}" Margin="0,3,0,0"
+                                                       Text="Discord kurulumunu tespit eder ve gerekli dosyaları onarır." />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button x:Name="BtnDiscordStart" Style="{StaticResource Button.SecondarySmall}"
+                                                    Content="Başlat" Click="BtnDiscordStart_Click"
+                                                    Visibility="Collapsed" Margin="0,0,8,0" />
+                                            <Button x:Name="BtnDiscordRepair" Style="{StaticResource Button.PrimarySmall}"
+                                                    Content="Onar" Click="BtnDiscordRepair_Click" />
+                                            <Button x:Name="BtnDiscordRemove" Style="{StaticResource Button.DangerSmall}"
+                                                    Content="Kaldır" Click="BtnDiscordRemove_Click"
+                                                    Visibility="Collapsed" Margin="8,0,0,0" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource RowSeparator}" Padding="16,13">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,16,0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Discord PTB" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                <Border x:Name="BadgePtb" Style="{StaticResource Badge}" Margin="10,0,0,0" />
+                                            </StackPanel>
+                                            <TextBlock Style="{StaticResource Text.Caption}" Margin="0,3,0,0"
+                                                       Text="Discord PTB istemcisini kurar, başlatır veya kaldırır." />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button x:Name="BtnPtbStart" Style="{StaticResource Button.SecondarySmall}"
+                                                    Content="Başlat" Click="BtnPtbStart_Click" Visibility="Collapsed" />
+                                            <Button x:Name="BtnPtbInstall" Style="{StaticResource Button.PrimarySmall}"
+                                                    Content="Kur" Click="BtnPtbInstall_Click" />
+                                            <Button x:Name="BtnPtbRemove" Style="{StaticResource Button.DangerSmall}"
+                                                    Content="Kaldır" Click="BtnPtbRemove_Click" Margin="8,0,0,0"
+                                                    Visibility="Collapsed" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                                <Border Padding="16,13">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,16,0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="WebCord" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                <Border x:Name="BadgeWebCord" Style="{StaticResource Badge}" Margin="10,0,0,0" />
+                                            </StackPanel>
+                                            <TextBlock Style="{StaticResource Text.Caption}" Margin="0,3,0,0"
+                                                       Text="Açık kaynak WebCord istemcisini kurar." />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button x:Name="BtnWebCordStart" Style="{StaticResource Button.SecondarySmall}"
+                                                    Content="Başlat" Click="BtnWebCordStart_Click"
+                                                    Visibility="Collapsed" Margin="0,0,8,0" />
+                                            <Button x:Name="BtnWebCordInstall" Style="{StaticResource Button.PrimarySmall}"
+                                                    Content="Kur" Click="BtnWebCordInstall_Click" />
+                                            <Button x:Name="BtnWebCordRemove" Style="{StaticResource Button.DangerSmall}"
+                                                    Content="Kaldır" Click="BtnWebCordRemove_Click" Margin="8,0,0,0"
+                                                    Visibility="Collapsed" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="SEÇENEKLER" Style="{StaticResource Text.GroupLabel}" Margin="0,24,0,10" />
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <Border Style="{StaticResource RowSeparator}" Padding="16,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,16,0">
+                                            <TextBlock Text="Discord PTB için temiz kurulum" />
+                                            <TextBlock Style="{StaticResource Text.Caption}" Margin="0,2,0,0"
+                                                       Text="Kurulumdan önce mevcut PTB verilerini siler. Onay gerektirir." />
+                                        </StackPanel>
+                                        <ToggleButton x:Name="TglPtbClean" Grid.Column="1" Style="{StaticResource Toggle}"
+                                                      Click="TglPtbClean_Click"
+                                                      AutomationProperties.Name="Discord PTB için temiz kurulum" />
+                                    </Grid>
+                                </Border>
+                                <Border Padding="16,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,16,0">
+                                            <TextBlock Text="WebCord için masaüstü kısayolu oluştur" />
+                                            <TextBlock Style="{StaticResource Text.Caption}" Margin="0,2,0,0"
+                                                       Text="Kurulum sonrasında masaüstüne kısayol ekler." />
+                                        </StackPanel>
+                                        <ToggleButton x:Name="TglWcShortcut" Grid.Column="1" Style="{StaticResource Toggle}"
+                                                      Click="TglWcShortcut_Click"
+                                                      AutomationProperties.Name="WebCord için masaüstü kısayolu oluştur" />
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ==================== SERVİSLER ==================== -->
+                    <StackPanel x:Name="PageServices" MaxWidth="680" HorizontalAlignment="Center" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Servisler" Style="{StaticResource Text.PageTitle}" />
+                            <Button Style="{StaticResource Button.Icon}" Width="24" Height="24" Margin="8,0,0,0"
+                                    Click="HelpServices_Click" ToolTip="Bu ekran hakkında"
+                                    AutomationProperties.Name="Bu ekran hakkında" VerticalAlignment="Center">
+                                <TextBlock Text="i" FontWeight="SemiBold" FontSize="13" />
+                            </Button>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource Text.PageSubtitle}" Margin="0,6,0,18"
+                                   Text="Kurulu bileşenlerin durumu ve yönetimi." />
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <Border Style="{StaticResource RowSeparator}" Padding="16,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="SERVİS" Style="{StaticResource Text.Micro}" />
+                                        <TextBlock Grid.Column="1" Text="DURUM" Style="{StaticResource Text.Micro}" />
+                                        <TextBlock Grid.Column="2" Text="BİLGİ" Style="{StaticResource Text.Micro}" />
+                                    </Grid>
+                                </Border>
+                                <!-- Satırlar kod tarafında oluşturulur -->
+                                <ItemsControl x:Name="ListServices" />
+
+                                <!-- Drover bir Windows servisi değil; Discord
+                                     klasörüne bırakılan dosyalarla çalışır. Bu
+                                     yüzden tablodan ayrı, kendi satırında. -->
+                                <Border BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,1,0,0">
+                                    <Grid Height="44" Margin="16,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Drover" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                        <Border x:Name="BadgeDrover" Grid.Column="1" Style="{StaticResource Badge}"
+                                                HorizontalAlignment="Left" />
+                                        <TextBlock Grid.Column="2" Style="{StaticResource Text.Caption}"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                                   Text="Discord klasörüne kopyalanan DLL" />
+                                        <Button x:Name="BtnDroverRemove" Grid.Column="3"
+                                                Style="{StaticResource Button.DangerSmall}" Content="Kaldır"
+                                                Click="BtnDroverRemove_Click" VerticalAlignment="Center"
+                                                Visibility="Collapsed" />
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="AĞ AYARLARI" Style="{StaticResource Text.GroupLabel}" Margin="0,24,0,10" />
+                        <Border Style="{StaticResource Card}" Padding="16,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Margin="0,0,16,0">
+                                    <TextBlock Text="DNS ve DoH ayarlarını her kurulumda uygula" />
+                                    <TextBlock Style="{StaticResource Text.Caption}" Margin="0,2,0,0"
+                                               Text="Kurulumlar tamamlandığında DNS ve DNS-over-HTTPS yapılandırması otomatik uygulanır." />
+                                </StackPanel>
+                                <ToggleButton x:Name="TglDns" Grid.Column="1" Style="{StaticResource Toggle}"
+                                              Click="TglDns_Click"
+                                              AutomationProperties.Name="DNS ve DoH ayarlarını her kurulumda uygula" />
+                            </Grid>
+                        </Border>
+
+                        <TextBlock Text="TEHLİKELİ İŞLEMLER" Style="{StaticResource Text.GroupLabel}" Margin="0,24,0,10"
+                                   Foreground="{DynamicResource Brush.Danger}" />
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <Border Style="{StaticResource RowSeparator}" Padding="16,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,16,0">
+                                            <TextBlock Text="Tüm servisleri kaldır" />
+                                            <TextBlock Style="{StaticResource Text.Caption}" Margin="0,2,0,0"
+                                                       Text="Kurulu bütün RevivalDPI servislerini ve yapılandırmalarını siler." />
+                                        </StackPanel>
+                                        <Button x:Name="BtnRemoveAll" Grid.Column="1" Style="{StaticResource Button.Danger}"
+                                                Height="30" Content="Tümünü Kaldır" Click="BtnRemoveAll_Click"
+                                                VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource RowSeparator}" Padding="16,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,16,0">
+                                            <TextBlock Text="DNS ve DoH ayarlarını geri al" />
+                                            <TextBlock Style="{StaticResource Text.Caption}" Margin="0,2,0,0"
+                                                       Text="DNS yapılandırmasını Windows varsayılanlarına döndürür." />
+                                        </StackPanel>
+                                        <Button x:Name="BtnRevertDns" Grid.Column="1" Style="{StaticResource Button.Danger}"
+                                                Height="30" Content="Ayarları Geri Al" Click="BtnRevertDns_Click"
+                                                VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                                <Border Padding="16,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,16,0">
+                                            <TextBlock Text="RevivalDPI'yi kaldır" />
+                                            <TextBlock Style="{StaticResource Text.Caption}" Margin="0,2,0,0"
+                                                       Text="Uygulamayı, servisleri ve tüm ayarları sistemden kaldırır." />
+                                        </StackPanel>
+                                        <Button x:Name="BtnUninstall" Grid.Column="1" Style="{StaticResource Button.DangerSolid}"
+                                                Height="30" Content="RevivalDPI'yi Kaldır" Click="BtnUninstall_Click"
+                                                VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- ============ İŞLEM DURUMU (belirsiz ilerleme) ============ -->
+        <Border x:Name="PanelBusy" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Stretch"
+                Background="{DynamicResource Brush.Surface}"
+                BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,1,0,0"
+                Padding="32,10" Visibility="Collapsed" Panel.ZIndex="30">
+            <StackPanel>
+                <TextBlock x:Name="TxtBusyStep" Style="{StaticResource Text.Caption}"
+                           Text="İşlem sürüyor…" Margin="0,0,0,8" />
+                <ProgressBar Style="{StaticResource IndeterminateBar}" />
+            </StackPanel>
+        </Border>
+
+        <!-- ============ AYARLAR POPOVER ============ -->
+        <Popup x:Name="PopupSettings" PlacementTarget="{Binding ElementName=BtnSettings}"
+               Placement="Bottom" HorizontalOffset="-188" VerticalOffset="4"
+               StaysOpen="False" AllowsTransparency="True">
+            <Border Background="{DynamicResource Brush.SurfaceRaised}"
+                    BorderBrush="{DynamicResource Brush.BorderStrong}" BorderThickness="1"
+                    CornerRadius="6" Width="220" Padding="8">
+                <StackPanel>
+                    <TextBlock Text="TEMA" Style="{StaticResource Text.Micro}" Margin="8,4,8,6" />
+                    <Button x:Name="BtnThemeSystem" Style="{StaticResource Button.Subtle}" Height="30"
+                            Padding="8,0" Click="ThemeOption_Click" Tag="System"
+                            Foreground="{DynamicResource Brush.TextPrimary}"
+                            HorizontalContentAlignment="Left" Content="Sistem" />
+                    <Button x:Name="BtnThemeLight" Style="{StaticResource Button.Subtle}" Height="30"
+                            Padding="8,0" Click="ThemeOption_Click" Tag="Light"
+                            Foreground="{DynamicResource Brush.TextPrimary}"
+                            HorizontalContentAlignment="Left" Content="Açık" />
+                    <Button x:Name="BtnThemeDark" Style="{StaticResource Button.Subtle}" Height="30"
+                            Padding="8,0" Click="ThemeOption_Click" Tag="Dark"
+                            Foreground="{DynamicResource Brush.TextPrimary}"
+                            HorizontalContentAlignment="Left" Content="Koyu" />
+
+                    <Border Height="1" Margin="4,8" Background="{DynamicResource Brush.Border}" />
+
+                    <TextBlock Text="DİL" Style="{StaticResource Text.Micro}" Margin="8,0,8,6" />
+                    <Button x:Name="BtnLangTR" Style="{StaticResource Button.Subtle}" Height="30"
+                            Padding="8,0" Click="LanguageOption_Click" Tag="TR"
+                            Foreground="{DynamicResource Brush.TextPrimary}"
+                            HorizontalContentAlignment="Left" Content="Türkçe" />
+                    <Button x:Name="BtnLangEN" Style="{StaticResource Button.Subtle}" Height="30"
+                            Padding="8,0" Click="LanguageOption_Click" Tag="EN"
+                            Foreground="{DynamicResource Brush.TextPrimary}"
+                            HorizontalContentAlignment="Left" Content="English" />
+                    <Button x:Name="BtnLangRU" Style="{StaticResource Button.Subtle}" Height="30"
+                            Padding="8,0" Click="LanguageOption_Click" Tag="RU"
+                            Foreground="{DynamicResource Brush.TextPrimary}"
+                            HorizontalContentAlignment="Left" Content="Русский" />
+                </StackPanel>
+            </Border>
+        </Popup>
+
+        <!-- ============ TOAST ============ -->
+        <Border x:Name="Toast" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Margin="0,0,20,20" MaxWidth="320" Padding="10,10,16,10" CornerRadius="5"
+                Background="{DynamicResource Brush.SurfaceRaised}"
+                BorderBrush="{DynamicResource Brush.BorderStrong}" BorderThickness="1"
+                Visibility="Collapsed" Panel.ZIndex="70">
+            <StackPanel Orientation="Horizontal">
+                <Border x:Name="ToastStripe" Width="3" CornerRadius="2" Margin="0,0,10,0"
+                        Background="{DynamicResource Brush.Success}" />
+                <TextBlock x:Name="TxtToast" TextWrapping="Wrap" VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
+        <!-- ============ MODAL KATMAN (onay / editör / yardım / hakkında) ============ -->
+        <Grid x:Name="ModalLayer" Grid.RowSpan="2" Background="{DynamicResource Brush.Overlay}"
+              Visibility="Collapsed" Panel.ZIndex="60">
+            <Border x:Name="ModalCard" Background="{DynamicResource Brush.SurfaceRaised}"
+                    BorderBrush="{DynamicResource Brush.BorderStrong}" BorderThickness="1"
+                    CornerRadius="6" Padding="20" Width="420"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid>
+                    <!-- Onay / editör / yardım için genel yerleşim -->
+                    <StackPanel x:Name="ModalGeneric">
+                        <TextBlock x:Name="TxtModalTitle" FontSize="15" FontWeight="SemiBold"
+                                   TextWrapping="Wrap" Margin="0,0,0,8" />
+
+                        <TextBlock x:Name="TxtModalBody" Style="{StaticResource Text.Caption}"
+                                   LineHeight="20" TextWrapping="Wrap" />
+
+                        <TextBox x:Name="ModalEditor" Style="{StaticResource Editor}" Height="170"
+                                 Margin="0,12,0,0" Visibility="Collapsed" />
+
+                        <CheckBox x:Name="ModalCheck" Margin="0,14,0,0" Visibility="Collapsed"
+                                  Foreground="{DynamicResource Brush.TextPrimary}"
+                                  Checked="ModalCheck_Changed" Unchecked="ModalCheck_Changed" />
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                            <Button x:Name="BtnModalCancel" Style="{StaticResource Button.Secondary}"
+                                    Content="Vazgeç" Click="BtnModalCancel_Click" Margin="0,0,8,0" />
+                            <Button x:Name="BtnModalConfirm" Style="{StaticResource Button.DangerSolid}"
+                                    Content="Onayla" Click="BtnModalConfirm_Click" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- ==================== HAKKINDA ==================== -->
+                    <StackPanel x:Name="AboutPanel" Visibility="Collapsed">
+                        <Image x:Name="ImgAboutLogo"
+                               Height="58" Stretch="Uniform" HorizontalAlignment="Center"
+                               RenderOptions.BitmapScalingMode="HighQuality" Margin="0,4,0,14" />
+
+                        <TextBlock Text="RevivalDPI" FontSize="18" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" />
+                        <TextBlock x:Name="TxtAboutVersion" Style="{StaticResource Text.Caption}"
+                                   HorizontalAlignment="Center" Margin="0,2,0,0" />
+
+                        <TextBlock Style="{StaticResource Text.Caption}" LineHeight="20" TextWrapping="Wrap"
+                                   TextAlignment="Center" Margin="0,14,0,0"
+                                   Text="Windows üzerindeki ağ yönlendirme, DPI yöntemleri, onarım işlemleri ve servis temizliğini tek yerden yöneten kompakt bir yönetim aracıdır." />
+
+                        <!-- Sistem bilgileri: hata bildiriminde istenen veriler burada -->
+                        <Border Background="{DynamicResource Brush.Surface}"
+                                BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1"
+                                CornerRadius="4" Padding="14,10" Margin="0,16,0,0">
+                            <Grid x:Name="GridAboutInfo">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" MinWidth="120" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <!-- Satırlar kod tarafında doldurulur -->
+                            </Grid>
+                        </Border>
+
+                        <TextBlock Style="{StaticResource Text.Micro}" LineHeight="17" TextWrapping="Wrap"
+                                   Margin="0,14,0,0"
+                                   Text="Lisans: MIT. RevivalDPI; Zapret, GoodbyeDPI, WinDivert, WireSock, ByeDPI ve ProxiFyre gibi üçüncü taraf bileşenleri yeniden dağıtır. Telif ve lisans bilgileri sahiplerine aittir." />
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+                            <Button x:Name="BtnAboutRepo" Style="{StaticResource Button.SecondarySmall}"
+                                    Content="Proje Deposu" Click="BtnAboutRepo_Click" Margin="0,0,8,0" />
+                            <Button x:Name="BtnAboutLogs" Style="{StaticResource Button.SecondarySmall}"
+                                    Content="Log Klasörü" Click="BtnAboutLogs_Click" Margin="0,0,8,0" />
+                            <Button x:Name="BtnAboutClose" Style="{StaticResource Button.PrimarySmall}"
+                                    Content="Kapat" Click="BtnModalCancel_Click" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

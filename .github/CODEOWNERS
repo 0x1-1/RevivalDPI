@@ -1,0 +1,11 @@
+# Her pull request icin varsayilan gozden gecirici.
+# Sozdizimi: https://docs.github.com/articles/about-code-owners
+
+*                       @0x1-1
+
+# Yayin altyapisi ve guvenlik politikasi degisiklikleri her zaman gozden
+# gecirilmeli: bunlar dogrudan yayimlanan ikili dosyalari etkiler.
+/.github/workflows/     @0x1-1
+/Directory.Build.props  @0x1-1
+/src/publish_release.ps1 @0x1-1
+/src/RevivalDPI-Setup.iss @0x1-1

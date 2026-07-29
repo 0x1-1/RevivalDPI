@@ -1,0 +1,55 @@
+name: Feature Request
+description: Suggest a feature or improvement (English)
+title: "[FEATURE] "
+labels: ["öneri"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion. Describing **the problem it solves** helps
+        more than describing the solution.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      placeholder: "I have to re-pick the profile after every install because ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: How else could this be solved? Did you find a workaround?
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Related area
+      options:
+        - Genel Bakış (Overview)
+        - DPI Yönlendirme (DPI Routing)
+        - Paket Kuralları (Packet Rules)
+        - DPI Classic
+        - Kurtarma (Recovery)
+        - Servisler (Services)
+        - UI / theming
+        - Install and update
+        - Translations
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Screenshots, sketches or links are welcome.

@@ -1,0 +1,34 @@
+{
+    "logLevel": "Info",
+    "proxies": [
+      {
+        "appNames": [
+          "webcord",
+		  "roblox",
+          "discord",
+          "Discord.exe",
+          "Update.exe",
+          "DiscordPTB.exe",
+          "RevivalDPI.exe",
+          "browser",
+          "chrome",
+          "firefox",
+          "opera",
+          "operagx",
+          "brave",
+          "vivaldi",
+          "msedge",
+          "zen",
+          "chromium",
+          "iexplore",
+          "Maxthon",
+          "librewolf"
+        ],
+        "socks5ProxyEndpoint": "127.0.0.1:1080",
+        "supportedProtocols": [
+          "TCP",
+          "UDP"
+        ]
+      }
+    ]
+  }

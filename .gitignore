@@ -1,0 +1,19 @@
+# Derleme ciktilari
+/bin/
+/obj/
+/.vs/
+/dist/
+/publish/
+/src/RevivalDPI/bin/
+/src/RevivalDPI/obj/
+
+# Kullaniciya ozel Visual Studio dosyalari
+*.user
+*.suo
+
+# Yerel calisma notlari, gunlukler ve gecici ciktilar.
+# Bunlar makineye ozgu mutlak yollar ve oturum kayitlari icerir; depoya
+# girmemeleri gerekir. Kapsam disi birakilmazlarsa "git add -A" bunlari
+# farkinda olmadan yayimlar.
+/.remember/
+*.log

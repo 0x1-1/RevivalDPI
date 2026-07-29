@@ -1,0 +1,38 @@
+<Project>
+
+  <!--
+    Yerel derlemeler ve İLK yayın için başlangıç sürümü.
+
+    CI bu satırı GÜNCELLEMEZ. Yayımlanan sürümün kaynağı son "v*" git
+    etiketidir; buradaki değer yalnızca hiç etiket yokken (ilk yayın) ve
+    -Version verilmeden yapılan yerel derlemelerde kullanılır.
+  -->
+  <PropertyGroup>
+    <RevivalDpiVersion>1.6.0</RevivalDpiVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Version>$(RevivalDpiVersion)</Version>
+    <AssemblyVersion>$(RevivalDpiVersion)</AssemblyVersion>
+    <FileVersion>$(RevivalDpiVersion)</FileVersion>
+    <InformationalVersion>$(RevivalDpiVersion)</InformationalVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Product>RevivalDPI</Product>
+    <Company>RevivalDPI</Company>
+    <Authors>RevivalDPI</Authors>
+    <Copyright>Copyright (c) 2025 Çağrı Taşkın</Copyright>
+    <NeutralLanguage>tr</NeutralLanguage>
+    <RepositoryUrl>https://github.com/0x1-1/RevivalDPI</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+</Project>

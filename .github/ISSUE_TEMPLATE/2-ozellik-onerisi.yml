@@ -1,0 +1,56 @@
+name: Özellik Önerisi
+description: Yeni bir özellik veya iyileştirme önerin
+title: "[ÖNERİ] "
+labels: ["öneri"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Öneriniz için teşekkürler. Ne istediğinizden çok **hangi sorunu
+        çözdüğünü** anlatmanız, doğru çözümü bulmamıza yardımcı olur.
+
+  - type: textarea
+    id: sorun
+    attributes:
+      label: Hangi sorunu çözüyor?
+      description: Şu an neyi yapamıyorsunuz veya ne sizi zorluyor?
+      placeholder: "Her kurulumdan sonra profili elle seçmek zorunda kalıyorum çünkü ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: cozum
+    attributes:
+      label: Önerdiğiniz çözüm
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatifler
+    attributes:
+      label: Düşündüğünüz alternatifler
+      description: Başka nasıl çözülebilirdi? Geçici bir yolunu buldunuz mu?
+
+  - type: dropdown
+    id: alan
+    attributes:
+      label: İlgili alan
+      options:
+        - Genel Bakış
+        - DPI Yönlendirme
+        - Paket Kuralları
+        - DPI Classic
+        - Kurtarma
+        - Servisler
+        - Arayüz / tema
+        - Kurulum ve güncelleme
+        - Çeviri
+        - Diğer
+    validations:
+      required: true
+
+  - type: textarea
+    id: ek
+    attributes:
+      label: Ek bilgi
+      description: Ekran görüntüsü, taslak çizim veya bağlantı ekleyebilirsiniz.

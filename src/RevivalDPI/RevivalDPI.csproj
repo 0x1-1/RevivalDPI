@@ -1,0 +1,151 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>Resources\revivaldpi.ico</ApplicationIcon>
+    <AssemblyName>RevivalDPI</AssemblyName>
+    <RootNamespace>RevivalDPI</RootNamespace>
+    <AssemblyTitle>RevivalDPI</AssemblyTitle>
+    <AssemblyDescription>Windows ağ yönlendirme ve DPI yönetim aracı</AssemblyDescription>
+    <!--
+      Sürüm, ürün ve telif bilgileri kök Directory.Build.props dosyasından gelir.
+      Burada tekrar tanımlamayın: CI sürümü MSBuild parametresi olarak geçirir
+      ve buradaki sabit bir değer onu sessizce ezer.
+    -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Disable trimming for WPF -->
+    <PublishTrimmed>false</PublishTrimmed>
+    <!-- Release builds should keep the dependency manifest for reliable publish output. -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <GenerateDependencyFile>true</GenerateDependencyFile>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
+    <PackageReference Include="MaterialDesignColors" Version="2.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\revivaldpi.ico" Condition="Exists('Resources\revivaldpi.ico')" />
+    <!--
+      Ana logo (üst bar + Hakkında). pack://application URI'si YALNIZCA
+      Resource derleme eylemiyle çözülür; Content olarak kopyalanması yetmez.
+      Bu satır eksikken görüntü sessizce boş çiziliyordu, Image yüksekliği
+      verildiği için yer kaplıyor ama hiçbir şey görünmüyordu.
+    -->
+    <Resource Include="Resources\revivaldpi-logo.png" Condition="Exists('Resources\revivaldpi-logo.png')" />
+    <Resource Include="Resources\revivaldpi-logo-128.png" Condition="Exists('Resources\revivaldpi-logo-128.png')" />
+    <Resource Include="Resources\revivaldpi-logo-128_inverted.png" Condition="Exists('Resources\revivaldpi-logo-128_inverted.png')" />
+    <Resource Include="Resources\revivaldpi-wordmark.png" Condition="Exists('Resources\revivaldpi-wordmark.png')" />
+    <Resource Include="Resources\revivaldpi-wordmark_inverted.png" Condition="Exists('Resources\revivaldpi-wordmark_inverted.png')" />
+    <Resource Include="Resources\loading.gif" Condition="Exists('Resources\loading.gif')" />
+    <Resource Include="Resources\lightmode.png" Condition="Exists('Resources\lightmode.png')" />
+    <Resource Include="Resources\darkmode.png" Condition="Exists('Resources\darkmode.png')" />
+    <Resource Include="Resources\Poppins-Regular.ttf" Condition="Exists('Resources\Poppins-Regular.ttf')" />
+    <Resource Include="Resources\Poppins-Bold.ttf" Condition="Exists('Resources\Poppins-Bold.ttf')" />
+    <Resource Include="Resources\Montserrat-VariableFont_wght.ttf" Condition="Exists('Resources\Montserrat-VariableFont_wght.ttf')" />
+    <Resource Include="Resources\tr_flag.png" Condition="Exists('Resources\tr_flag.png')" />
+    <Resource Include="Resources\gb_flag.png" Condition="Exists('Resources\gb_flag.png')" />
+    <Resource Include="Resources\ru_flag.png" Condition="Exists('Resources\ru_flag.png')" />
+    <Resource Include="Resources\language.png" Condition="Exists('Resources\language.png')" />
+    <Resource Include="Resources\language_darkmode.png" Condition="Exists('Resources\language_darkmode.png')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>res\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <LogoFallbackResource Include="Resources\revivaldpi-logo-128.png" />
+    <LogoFallbackResource Include="Resources\revivaldpi-logo-128_inverted.png" />
+  </ItemGroup>
+
+  <Target Name="CopyLogoFallbackResourcesToBuild" AfterTargets="Build">
+    <Copy
+      SourceFiles="@(LogoFallbackResource)"
+      DestinationFolder="$(TargetDir)Resources"
+      SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CopyLogoFallbackResourcesToPublish" AfterTargets="Publish" Condition="'$(PublishDir)' != ''">
+    <Copy
+      SourceFiles="@(LogoFallbackResource)"
+      DestinationFolder="$(PublishDir)Resources"
+      SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- Keep the legacy fallback folder out of incremental build outputs. -->
+  <Target Name="RemoveLegacyBuildPublishFallback" AfterTargets="Build">
+    <ItemGroup>
+      <LegacyBuildPublishFallback Include="$(TargetDir)publish\Resources\*" />
+    </ItemGroup>
+    <Delete Files="@(LegacyBuildPublishFallback)" />
+    <RemoveDir Directories="$(TargetDir)publish\Resources" Condition="Exists('$(TargetDir)publish\Resources')" />
+    <RemoveDir Directories="$(TargetDir)publish" Condition="Exists('$(TargetDir)publish')" />
+  </Target>
+
+</Project> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

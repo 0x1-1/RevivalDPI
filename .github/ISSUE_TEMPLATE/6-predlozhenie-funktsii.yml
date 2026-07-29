@@ -1,0 +1,55 @@
+name: Предложение функции
+description: Предложить новую функцию или улучшение (Русский)
+title: "[ПРЕДЛОЖЕНИЕ] "
+labels: ["öneri"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо за предложение. Описание **решаемой проблемы** помогает больше,
+        чем описание самого решения.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Какую проблему это решает?
+      placeholder: "После каждой установки приходится заново выбирать профиль, потому что ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Предлагаемое решение
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Рассмотренные альтернативы
+      description: Как ещё это можно решить? Нашли ли вы обходной путь?
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Связанная область
+      options:
+        - Genel Bakış (Обзор)
+        - DPI Yönlendirme (Маршрутизация DPI)
+        - Paket Kuralları (Правила пакетов)
+        - DPI Classic
+        - Kurtarma (Восстановление)
+        - Servisler (Службы)
+        - Интерфейс / темы
+        - Установка и обновление
+        - Переводы
+        - Другое
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Дополнительная информация
+      description: Скриншоты, наброски или ссылки приветствуются.

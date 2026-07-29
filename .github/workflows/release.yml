@@ -1,0 +1,354 @@
+name: Release
+
+# main'e her push'ta surumu artirir, derler, paketler ve GitHub Release yayimlar.
+#
+# ONEMLI: bu is depoya COMMIT ATMAZ ve ETIKETI AYRICA PUSH ETMEZ. Surum
+# numarasinin kaynagi son "v*" etiketidir; etiket, release yayimlanirken
+# --target ile atomik olarak olusturulur. Boylece main tek commit'te kalir,
+# is kendi kendini tetikleyemez ve basarisiz bir kosu sahipsiz etiket birakmaz.
+# Surum, derleme sirasinda MSBuild ve ISCC'ye parametre olarak gecirilir.
+#
+# Bir push'un release uretmesini istemiyorsaniz commit mesajiniza [skip release]
+# yazin.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Sürüm artırma düzeyi"
+        type: choice
+        options: [auto, patch, minor, major]
+        default: auto
+      dry_run:
+        description: "Yalnızca derle, release yayımlama"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DOTNET_VERSION: "8.0.x"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+
+jobs:
+  release:
+    name: Sürüm artır, derle ve yayımla
+    runs-on: windows-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (!contains(github.event.head_commit.message, '[skip release]') &&
+      !contains(github.event.head_commit.message, '[skip ci]'))
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: .NET SDK kur
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: NuGet önbelleği
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      # ---------------------------------------------------------------------
+      # Surum hesaplama: kaynak son ETIKET, dosya degil
+      # ---------------------------------------------------------------------
+      - name: Sonraki sürümü hesapla
+        id: version
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          # Select-Object -First 1 boru hattini erken keser ve git'i yarida
+          # birakabilir; diziye alip indekslemek guvenli.
+          #
+          # SADECE tam semver etiketleri dikkate alinir. Aksi halde 'v2.0.0-beta'
+          # gibi tek bir etiket, regex eslesmedigi icin props'a dusurup ama
+          # $lastTag dolu kaldigi icin ilk-yayin dalini atlatarak surumu kalici
+          # olarak geriye cekerdi.
+          $lastTag = @(git tag --list 'v*' --sort=-v:refname |
+                       Where-Object { $_ -match '^v\d+\.\d+\.\d+$' })[0]
+
+          if ($lastTag) {
+            $null = $lastTag -match '^v(\d+)\.(\d+)\.(\d+)$'
+            $major = [int]$Matches[1]; $minor = [int]$Matches[2]; $patch = [int]$Matches[3]
+            $source = $lastTag
+          }
+          else {
+            # Hic etiket yoksa Directory.Build.props baslangic degeri olur.
+            $props = Get-Content 'Directory.Build.props' -Raw
+            if ($props -notmatch '<RevivalDpiVersion>(\d+)\.(\d+)\.(\d+)</RevivalDpiVersion>') {
+              throw 'Ne v* etiketi ne de Directory.Build.props icinde surum bulunabildi.'
+            }
+            $major = [int]$Matches[1]; $minor = [int]$Matches[2]; $patch = [int]$Matches[3]
+            $source = 'Directory.Build.props'
+          }
+          $current = "$major.$minor.$patch"
+          Write-Host "Mevcut surum: $current (kaynak: $source)"
+
+          # Ilk yayin: hic etiket yoksa props'taki degeri OLDUGU GIBI yayimla.
+          # Artirsaydik depo daha ilk release'inde bir sonraki numaradan
+          # baslardi (or. 1.6.0 yazip 1.6.1 cikardi).
+          # workflow_dispatch ile acikca bir artirma istendiyse o kazanir.
+          $requestedBump = '${{ inputs.bump }}'
+          if (-not $lastTag -and (-not $requestedBump -or $requestedBump -eq 'auto')) {
+            Write-Host "Etiket yok: ilk yayin $current olarak cikacak."
+            "current=(ilk yayin)" | Out-File $env:GITHUB_OUTPUT -Append
+            "version=$current"    | Out-File $env:GITHUB_OUTPUT -Append
+            "tag=v$current"       | Out-File $env:GITHUB_OUTPUT -Append
+            "level=ilk yayin"     | Out-File $env:GITHUB_OUTPUT -Append
+            exit 0
+          }
+
+          if ($lastTag) { $range = "$lastTag..HEAD" } else { $range = 'HEAD' }
+          $log = git log $range --pretty=format:'%s%n%b' 2>$null
+          if (-not $log) { $log = '' }
+
+          $requested = '${{ inputs.bump }}'
+          if ($requested -and $requested -ne 'auto') {
+            $level = $requested
+          }
+          elseif ($log -match '(?m)^[a-z]+(\([^)]*\))?!:' -or $log -match 'BREAKING CHANGE') {
+            $level = 'major'
+          }
+          elseif ($log -match '(?m)^feat(\([^)]*\))?:') {
+            $level = 'minor'
+          }
+          else {
+            $level = 'patch'
+          }
+          Write-Host "Artirma duzeyi: $level"
+
+          switch ($level) {
+            'major' { $major++; $minor = 0; $patch = 0 }
+            'minor' { $minor++; $patch = 0 }
+            default { $patch++ }
+          }
+          $next = "$major.$minor.$patch"
+          Write-Host "Yeni surum: $next"
+
+          if (git tag --list "v$next") {
+            throw "v$next etiketi zaten var."
+          }
+
+          "current=$current" | Out-File $env:GITHUB_OUTPUT -Append
+          "version=$next"    | Out-File $env:GITHUB_OUTPUT -Append
+          "tag=v$next"       | Out-File $env:GITHUB_OUTPUT -Append
+          "level=$level"     | Out-File $env:GITHUB_OUTPUT -Append
+          if ($lastTag) { "last_tag=$lastTag" | Out-File $env:GITHUB_OUTPUT -Append }
+
+      - name: Sürüm notlarını oluştur
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = '${{ steps.version.outputs.tag }}'
+          $lastTag = '${{ steps.version.outputs.last_tag }}'
+          if ($lastTag) { $range = "$lastTag..HEAD" } else { $range = 'HEAD' }
+
+          $commits = @(git log $range --no-merges --pretty=format:'%H%x1f%s' |
+            Where-Object { $_ } |
+            ForEach-Object {
+              $p = $_ -split "`u{1f}"
+              [pscustomobject]@{ Sha = $p[0]; Subject = $p[1] }
+            })
+
+          $groups = [ordered]@{
+            'Yenilikler'    = @('feat')
+            'Düzeltmeler'   = @('fix')
+            'Performans'    = @('perf')
+            'Arayüz'        = @('ui', 'style')
+            'Dokümantasyon' = @('docs')
+            'Bakım'         = @('chore', 'refactor', 'build', 'ci', 'test')
+          }
+
+          $sb = [System.Text.StringBuilder]::new()
+          $null = $sb.AppendLine("## RevivalDPI $tag")
+          $null = $sb.AppendLine()
+
+          $used = New-Object System.Collections.Generic.HashSet[string]
+          foreach ($g in $groups.GetEnumerator()) {
+            $matched = @($commits | Where-Object {
+              $s = $_.Subject
+              $hit = $false
+              foreach ($p in $g.Value) { if ($s -match "^$p(\([^)]*\))?!?:") { $hit = $true } }
+              $hit
+            })
+            if ($matched.Count -eq 0) { continue }
+            $null = $sb.AppendLine("### $($g.Key)")
+            foreach ($c in $matched) {
+              $null = $used.Add($c.Sha)
+              $text = $c.Subject -replace '^[a-z]+(\([^)]*\))?!?:\s*', ''
+              $null = $sb.AppendLine("- $text (``$($c.Sha.Substring(0,7))``)")
+            }
+            $null = $sb.AppendLine()
+          }
+
+          $other = @($commits | Where-Object { -not $used.Contains($_.Sha) })
+          if ($other.Count -gt 0) {
+            $null = $sb.AppendLine("### Diğer değişiklikler")
+            foreach ($c in $other) {
+              $null = $sb.AppendLine("- $($c.Subject) (``$($c.Sha.Substring(0,7))``)")
+            }
+            $null = $sb.AppendLine()
+          }
+
+          if ($commits.Count -eq 0) {
+            $null = $sb.AppendLine("Bu sürümde kayda değer bir kod değişikliği yok.")
+            $null = $sb.AppendLine()
+          }
+
+          $null = $sb.AppendLine("### Kurulum")
+          $null = $sb.AppendLine()
+          $null = $sb.AppendLine("- **Kurulum sihirbazı:** ``RevivalDPI-Setup-$tag.exe``")
+          $null = $sb.AppendLine("- **Taşınabilir:** ``RevivalDPI-win-x64-$tag.zip`` (kendi kendine yeten, .NET kurulumu gerekmez)")
+          $null = $sb.AppendLine()
+          $null = $sb.AppendLine("İndirdiğiniz dosyayı ``SHA256SUMS.txt`` ile doğrulayın:")
+          $null = $sb.AppendLine()
+          $null = $sb.AppendLine('```powershell')
+          $null = $sb.AppendLine("Get-FileHash .\RevivalDPI-win-x64-$tag.zip -Algorithm SHA256")
+          $null = $sb.AppendLine('```')
+          $null = $sb.AppendLine()
+          $null = $sb.AppendLine("> RevivalDPI yönetici yetkisi ister, Windows servisleri kurar ve ağ yapılandırmasını değiştirir.")
+
+          if ($lastTag) {
+            $null = $sb.AppendLine()
+            $null = $sb.AppendLine("**Tüm değişiklikler:** https://github.com/${{ github.repository }}/compare/$lastTag...$tag")
+          }
+
+          $body = $sb.ToString()
+          $body | Out-File -FilePath 'RELEASE_NOTES.md' -Encoding utf8
+          Write-Host $body
+
+      # ---------------------------------------------------------------------
+      # Derle ve paketle. Surum dosyaya YAZILMAZ, parametre olarak gecirilir.
+      # ---------------------------------------------------------------------
+      - name: Inno Setup kur
+        # install, zaten kurulu paketi guncellemez ve runner imaji Inno Setup
+        # ile geliyor. .iss dosyasi x64compatible kullaniyor; bu yalnizca
+        # Inno Setup 6.3+ tarafindan taninir, bu yuzden upgrade gerekiyor.
+        # 1641/3010 "yeniden baslatma bekleniyor" anlamina gelir ve basarili
+        # sayilmali; aksi halde GitHub'in ekledigi exit $LASTEXITCODE isi dusurur.
+        run: choco upgrade innosetup --no-progress -y --ignore-package-exit-codes
+
+      - name: Yayın çıktısını üret
+        shell: pwsh
+        run: ./src/publish_release.ps1 -Version '${{ steps.version.outputs.version }}'
+
+      - name: Derlenen exe sürümünü doğrula
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $declared = '${{ steps.version.outputs.version }}'
+          $exe = 'publish/RevivalDPI-win-x64/RevivalDPI.exe'
+          if (-not (Test-Path $exe)) { throw "Yayin ciktisi yok: $exe" }
+          $actual = (Get-Item $exe).VersionInfo.FileVersion
+          Write-Host "beklenen: $declared / gercek: $actual"
+          # StartsWith kullanmiyoruz: '1.6.0' beklerken '1.6.01' de geceridi.
+          # AssemblyVersion dort parcali oldugu icin ilk uc parcayi kiyasliyoruz.
+          $actualShort = ($actual -split '\.')[0..2] -join '.'
+          if ($actualShort -ne $declared) {
+            throw "Surum uyusmuyor: beklenen=$declared exe=$actual"
+          }
+
+      - name: Arşiv ve installer'ı adlandır
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = '${{ steps.version.outputs.tag }}'
+          New-Item -ItemType Directory -Force -Path 'artifacts' | Out-Null
+
+          $publishDir = 'publish/RevivalDPI-win-x64'
+          if (-not (Test-Path $publishDir)) { throw "Yayin cikti klasoru yok: $publishDir" }
+
+          $zipPath = Join-Path (Resolve-Path 'artifacts').Path "RevivalDPI-win-x64-$tag.zip"
+          $sevenZip = 'C:\Program Files\7-Zip\7z.exe'
+          if (Test-Path $sevenZip) {
+            # Compress-Archive kendi kendine yeten WPF ciktisinda cok yavas kalir.
+            & $sevenZip a -tzip -mx=5 -bso0 -bsp0 $zipPath "$publishDir\*"
+            if ($LASTEXITCODE -ne 0) { throw "7z arsivleme basarisiz: $LASTEXITCODE" }
+          }
+          else {
+            Compress-Archive -Path "$publishDir\*" -DestinationPath $zipPath -CompressionLevel Optimal
+          }
+
+          # Release notlari her zaman kurulum sihirbazini duyurur; installer
+          # uretilmediyse sessizce ZIP-only yayimlamak, var olmayan bir dosyayi
+          # isaret eden bir surum yayimlamak demektir. Bu yuzden hata veriyoruz.
+          $setup = @(Get-ChildItem -Path 'dist' -Filter '*.exe' -ErrorAction SilentlyContinue |
+                     Sort-Object LastWriteTime -Descending)[0]
+          if (-not $setup) {
+            throw 'Installer uretilmedi (dist/*.exe yok). Inno Setup adimini kontrol edin.'
+          }
+          Copy-Item $setup.FullName "artifacts/RevivalDPI-Setup-$tag.exe"
+
+          Push-Location 'artifacts'
+          $lines = Get-ChildItem -File | ForEach-Object {
+            "$((Get-FileHash $_.Name -Algorithm SHA256).Hash.ToLower())  $($_.Name)"
+          }
+          $lines | Out-File 'SHA256SUMS.txt' -Encoding ascii
+          Pop-Location
+
+          Get-ChildItem 'artifacts' | ForEach-Object { "{0,-45} {1,12:N0} bayt" -f $_.Name, $_.Length }
+
+      - name: Yapıları sakla
+        uses: actions/upload-artifact@v7
+        with:
+          name: RevivalDPI-${{ steps.version.outputs.tag }}
+          path: artifacts/*
+          retention-days: 14
+
+      - name: GitHub Release yayımla
+        if: ${{ inputs.dry_run != true }}
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = '${{ steps.version.outputs.tag }}'
+
+          # Etiketi AYRI bir adimda onceden olusturmuyoruz: release yayimlama
+          # basarisiz olsaydi uzakta sahipsiz bir etiket kalir ve o surum
+          # numarasi yanardi. --target ile etiketi release'in kendisi atomik
+          # olarak olusturur; depoya yine commit atilmaz.
+          gh release create $tag (Get-ChildItem 'artifacts' -File | ForEach-Object { $_.FullName }) `
+            --target '${{ github.sha }}' `
+            --title "RevivalDPI $tag" `
+            --notes-file 'RELEASE_NOTES.md' `
+            --latest
+          if ($LASTEXITCODE -ne 0) { throw "gh release create basarisiz: $LASTEXITCODE" }
+
+      - name: Özet
+        if: always()
+        shell: pwsh
+        run: |
+          $tag = '${{ steps.version.outputs.tag }}'
+          $level = '${{ steps.version.outputs.level }}'
+          $prev = '${{ steps.version.outputs.current }}'
+          @"
+          ## RevivalDPI $tag
+
+          | Alan | Değer |
+          | --- | --- |
+          | Önceki sürüm | $prev |
+          | Yeni sürüm | $tag |
+          | Artırma düzeyi | $level |
+          | Release | https://github.com/${{ github.repository }}/releases/tag/$tag |
+
+          Depoya commit atılmadı; sürümün kaynağı etikettir.
+          "@ | Out-File $env:GITHUB_STEP_SUMMARY -Append

@@ -1,0 +1,7 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Güvenlik açığı bildirimi / Security vulnerability
+    url: https://github.com/0x1-1/RevivalDPI/security/advisories/new
+    about: >
+      Güvenlik açıklarını issue olarak açmayın, bu özel kanalı kullanın.
+      Do not open security issues publicly, use this private channel.

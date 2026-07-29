@@ -1,0 +1,118 @@
+name: Отчёт об ошибке
+description: Сообщить о проблеме (Русский)
+title: "[ОШИБКА] "
+labels: ["hata"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо за отчёт.
+
+        **Сначала попробуйте это:** обновитесь до
+        [последней версии](https://github.com/0x1-1/RevivalDPI/releases/latest), возможно, проблема уже исправлена.
+
+        ⚠️ **Не сообщайте об уязвимостях здесь.** Используйте канал
+        [приватных сообщений о безопасности](https://github.com/0x1-1/RevivalDPI/security/advisories/new).
+
+  - type: checkboxes
+    id: prechecks
+    attributes:
+      label: Предварительные проверки
+      options:
+        - label: Я использую последнюю версию
+          required: true
+        - label: Я искал такую же проблему среди открытых issue
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Что пошло не так?
+      placeholder: |
+        Ожидалось: ...
+        Фактически: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Шаги для воспроизведения
+      placeholder: |
+        1. Открыть RevivalDPI
+        2. Перейти в «Paket Kuralları»
+        3. Выбрать профиль Türk Telekom, нажать «Kurulumu Başlat»
+        4. Появляется ошибка
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Версия RevivalDPI
+      description: Указана в окне «Hakkında»
+      placeholder: "v1.5.5 Setup"
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Версия Windows
+      placeholder: "Windows 11 23H2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: screen
+    attributes:
+      label: На каком экране возникает?
+      options:
+        - Genel Bakış (Обзор)
+        - DPI Yönlendirme (Маршрутизация DPI)
+        - Paket Kuralları (Правила пакетов)
+        - DPI Classic
+        - Kurtarma (Восстановление)
+        - Servisler (Службы)
+        - Установщик
+        - Приложение вообще не запускается
+        - Другое / не уверен
+    validations:
+      required: true
+
+  - type: input
+    id: isp
+    attributes:
+      label: Интернет-провайдер
+      placeholder: "Türk Telekom"
+    validations:
+      required: true
+
+  - type: textarea
+    id: conflicting
+    attributes:
+      label: Установленные VPN / антивирусы
+      description: >
+        Cloudflare WARP, Kaspersky, ESET, другой VPN-клиент? Они
+        перехватывают сетевой стек и чаще всего вызывают конфликты.
+      placeholder: "Cloudflare WARP установлен, но отключён"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Файлы журналов
+      description: >
+        Перетащите файлы `.log` из папки `%LOCALAPPDATA%\RevivalDPI\Logs` в
+        это поле. Папку можно открыть из окна «Hakkında».
+
+
+        **Без журналов большинство ошибок диагностировать невозможно.**
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Скриншоты или дополнительная информация

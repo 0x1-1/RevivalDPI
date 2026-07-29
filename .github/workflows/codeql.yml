@@ -1,0 +1,53 @@
+name: CodeQL
+
+# C# kod tabanini guvenlik ve kalite sorgulari icin tarar.
+# Bu uygulama yonetici yetkisiyle calisip surucu yukledigi icin statik analiz
+# ozellikle degerli.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Her pazartesi 04:17 UTC. Sabit dakika, runner kuyrugunu dagitmak icin.
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analiz (csharp)
+    runs-on: windows-latest
+    timeout-minutes: 45
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v7
+
+      - name: .NET SDK kur
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: CodeQL'i başlat
+        uses: github/codeql-action/init@v4
+        with:
+          languages: csharp
+          build-mode: manual
+          queries: security-and-quality
+
+      - name: Derle
+        run: dotnet build src/RevivalDPI/RevivalDPI.csproj -c Release
+
+      - name: Analizi çalıştır
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:csharp"

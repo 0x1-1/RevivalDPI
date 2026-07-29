@@ -1,0 +1,119 @@
+name: Bug Report
+description: Report a problem (English)
+title: "[BUG] "
+labels: ["hata"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a report.
+
+        **Try this first:** update to the
+        [latest release](https://github.com/0x1-1/RevivalDPI/releases/latest), your issue may already be fixed.
+
+        ⚠️ **Do not report security vulnerabilities here.** Use the
+        [private security advisory](https://github.com/0x1-1/RevivalDPI/security/advisories/new)
+        channel instead.
+
+  - type: checkboxes
+    id: prechecks
+    attributes:
+      label: Pre-flight checks
+      options:
+        - label: I am on the latest release
+          required: true
+        - label: I searched existing issues for the same problem
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What went wrong?
+      placeholder: |
+        Expected: ...
+        Actual: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open RevivalDPI
+        2. Go to "Paket Kuralları"
+        3. Pick the Türk Telekom profile, click "Kurulumu Başlat"
+        4. Error appears
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: RevivalDPI version
+      description: Shown in the About window
+      placeholder: "v1.5.5 Setup"
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: "Windows 11 23H2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: screen
+    attributes:
+      label: Which screen does it happen on?
+      options:
+        - Genel Bakış (Overview)
+        - DPI Yönlendirme (DPI Routing)
+        - Paket Kuralları (Packet Rules)
+        - DPI Classic
+        - Kurtarma (Recovery)
+        - Servisler (Services)
+        - Installer
+        - App does not start at all
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: input
+    id: isp
+    attributes:
+      label: Internet service provider
+      placeholder: "Türk Telekom"
+    validations:
+      required: true
+
+  - type: textarea
+    id: conflicting
+    attributes:
+      label: VPN / security software installed
+      description: >
+        Cloudflare WARP, Kaspersky, ESET, another VPN client? These hook the
+        network stack and are the most common source of conflicts.
+      placeholder: "Cloudflare WARP installed but disabled"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log files
+      description: >
+        Drag and drop the `.log` files from `%LOCALAPPDATA%\RevivalDPI\Logs`
+        into this field. You can open that folder from the About window.
+
+
+        **Most bugs cannot be diagnosed without logs.**
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or additional context

@@ -1,0 +1,121 @@
+name: Hata Raporu
+description: Bir sorunu bildirin
+title: "[HATA] "
+labels: ["hata"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Rapor açtığınız için teşekkürler.
+
+        **Önce şunu deneyin:** [en son sürüme](https://github.com/0x1-1/RevivalDPI/releases/latest)
+        güncelleyin, sorununuz zaten düzeltilmiş olabilir.
+
+        ⚠️ **Güvenlik açıklarını buraya yazmayın.** Bunun için
+        [özel güvenlik bildirimi](https://github.com/0x1-1/RevivalDPI/security/advisories/new)
+        kanalını kullanın.
+
+  - type: checkboxes
+    id: onkosullar
+    attributes:
+      label: Ön kontroller
+      options:
+        - label: En son sürümü kullanıyorum
+          required: true
+        - label: Açık issue'lar arasında aynı sorunu aradım
+          required: true
+
+  - type: textarea
+    id: aciklama
+    attributes:
+      label: Sorun nedir?
+      description: Ne olmasını bekliyordunuz, bunun yerine ne oldu?
+      placeholder: |
+        Beklenen: ...
+        Gerçekleşen: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: adimlar
+    attributes:
+      label: Yeniden üretme adımları
+      placeholder: |
+        1. RevivalDPI'yi aç
+        2. "Paket Kuralları" ekranına git
+        3. Türk Telekom profilini seç, "Kurulumu Başlat"a bas
+        4. Hata görünüyor
+    validations:
+      required: true
+
+  - type: input
+    id: surum
+    attributes:
+      label: RevivalDPI sürümü
+      description: Hakkında penceresinde yazar
+      placeholder: "v1.5.5 Setup"
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows sürümü
+      placeholder: "Windows 11 23H2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ekran
+    attributes:
+      label: Hangi ekranda oluşuyor?
+      options:
+        - Genel Bakış
+        - DPI Yönlendirme
+        - Paket Kuralları
+        - DPI Classic
+        - Kurtarma
+        - Servisler
+        - Kurulum sihirbazı
+        - Uygulama hiç açılmıyor
+        - Diğer / emin değilim
+    validations:
+      required: true
+
+  - type: input
+    id: isp
+    attributes:
+      label: İnternet servis sağlayıcınız
+      placeholder: "Türk Telekom"
+    validations:
+      required: true
+
+  - type: textarea
+    id: cakisan
+    attributes:
+      label: Sistemde kurulu VPN / güvenlik yazılımları
+      description: >
+        Cloudflare WARP, Kaspersky, ESET, başka bir VPN istemcisi var mı?
+        Bunlar ağ katmanına müdahale ettiği için çakışmaların en yaygın nedenidir.
+      placeholder: "Cloudflare WARP kurulu ama kapalı"
+    validations:
+      required: true
+
+  - type: textarea
+    id: loglar
+    attributes:
+      label: Log dosyaları
+      description: >
+        `%LOCALAPPDATA%\RevivalDPI\Logs` klasöründeki `.log` dosyalarını bu
+        alana sürükleyip bırakın. Klasörü Hakkında penceresindeki
+        "Log Klasörünü Aç" düğmesinden açabilirsiniz.
+
+
+        **Loglar olmadan çoğu hata teşhis edilemez.**
+    validations:
+      required: true
+
+  - type: textarea
+    id: ek
+    attributes:
+      label: Ekran görüntüsü veya ek bilgi
